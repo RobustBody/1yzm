@@ -1,5 +1,7 @@
-"""@author robustbody
-设备巡检，自动登录 beta1.0
+"""@author RobustBody
+设备巡检，自动登录 beta1.0.1
+ 版本更新：
+    修复了部分bug,账号密码改为了手动输入
  识别验证码步骤：
 1.打开浏览器，打开所有安全设备登录页面
 2.根据每个页面的title不同，设备设备类型
@@ -8,13 +10,14 @@
 5.无验证码的根据title，选择不同的登录点击方式
 使用方式：
 双击py,浏览器启动后，打开巡检的设备，到命令行窗口，输入任意键；
-回到浏览器，开始自动登录；
+回到浏览器，开始自动登录；脚本前三次登录为自动登录。
 """
 
 
 # 导入相关库
 import os
 import time
+import getpass
 
 from ast import Num, Try
 from cmath import e
@@ -36,15 +39,16 @@ options.add_argument('--no-sandbox')
 options.add_argument('--disable-dev-shm-usage')
 options.add_argument('--disable-headless')
 options.add_experimental_option('excludeSwitches', ['enable-logging'])
-#options.add_argument('user-data-dir=C:\\Users\\xxx\\AppData\\Local\\Microsoft\\Edge\\User Data')
-options.add_argument('--user-data-dir=C:\\Users\\xxx\\AppData\\Local\\Microsoft\\Edge\\User Data')  #这行如果导致报错，显示"unknown error: DevToolsActivePort file doesn't exist"  说明edge还有进程在后台运行
+#options.add_argument('user-data-dir=C:\\Users\\lutw\\AppData\\Local\\Microsoft\\Edge\\User Data')
+options.add_argument('--user-data-dir=C:\\Users\\lutw\\AppData\\Local\\Microsoft\\Edge\\User Data')  #这行如果导致报错，显示"unknown error: DevToolsActivePort file doesn't exist"  说明edge还有进程在后台运行
 driver = webdriver.Edge(options=options)
 
 # 全局实例化对象
 m=PyMouse()
 k=PyKeyboard()
-userName="user"
-passWord="pass"
+userName=input("请输入要登录的用户名：")
+#passWord=input("请输入用户密码：")
+passWord=getpass.getpass("请输入用户密码：")
 ifc=0
 
 #天清入侵防御系统
@@ -359,6 +363,7 @@ def ah_myAPT():
     # 获取验证码图片
     yzm=YzmDiv.find_element(By.TAG_NAME,"img")
     # 获取验证码输入框
+    #yzminput=YzmDiv.find_element(By.NAME,"captcha")
     yzminput=YzmDiv.find_element(By.TAG_NAME,"input")
     # 验证码图片转换为base64
     data = yzm.screenshot_as_base64
@@ -367,7 +372,8 @@ def ah_myAPT():
     yzmtext = ocr.classification(data)
     # 判断识别的验证码是否为4位，通过isdigit()函数，可以判断字符串是否为数字{if yzmtext.isdigit():}
     if len(yzmtext)==4:
-        yzminput.clear()
+        #yzminput.clear()
+        driver.execute_script("arguments[0].value='';",yzminput)
         # 输入验证码
         yzminput.send_keys(yzmtext)
         # 输入账号密码
@@ -376,8 +382,10 @@ def ah_myAPT():
         #allInput[1].clear()
         #allInput[0].send_keys(userName)
         #allInput[1].send_keys(passWord)
-        driver.find_element(By.ID,"login-user-input").clear()
-        driver.find_element(By.ID,"password").clear()
+        #driver.find_element(By.ID,"login-user-input").clear()
+        #driver.find_element(By.ID,"password").clear()
+        driver.execute_script("document.getElementById('login-user-input').value='';")
+        driver.execute_script("document.getElementById('password').value='';")
         driver.find_element(By.ID,"login-user-input").send_keys(userName)
         driver.find_element(By.ID,"password").send_keys(passWord)
         driver.find_element(By.CSS_SELECTOR,".cut-button.login-submit.cut-button--primary.cut-button--medium").click()
@@ -425,6 +433,52 @@ def my_dbSjFk():
     driver.find_element(By.ID,"password").send_keys(passWord)
     #点击登录
     driver.find_element(By.CSS_SELECTOR,".ant-btn.ant-btn-primary.ant-btn-lg.ant-btn-block").click()
+def my_AiLPHA():
+    global ifc
+    # 获取验证码图片
+    try:
+        yzmimg = driver.find_element(By.CLASS_NAME,"codeImg")
+    except:
+        null_yzm()
+        return 0
+    # 验证码图片转换为base64
+    data = yzmimg.screenshot_as_base64
+    ocr = ddddocr.DdddOcr()
+    # 进行验证码识别
+    yzmtext = ocr.classification(data)
+    # 判断识别的验证码是否为4位，通过isdigit()函数，可以判断字符串是否为数字{if yzmtext.isdigit():}
+    if len(yzmtext)==4:
+        # 定位验证码输入框
+        inputs=driver.find_elements(By.TAG_NAME,"input")
+        inputs[2].clear()
+        # 输入验证码
+        inputs[2].send_keys(yzmtext)
+        # 输入账号密码
+        inputs[0].clear()
+        inputs[1].clear()
+        inputs[0].send_keys(userName)
+        inputs[1].send_keys(passWord)
+        k.tap_key(k.tab_key)
+        driver.find_element(By.CSS_SELECTOR,".ivu-btn.ivu-btn-primary").click()
+    elif ifc < 10:# 非4位的验证码，需要通过点击刷新重新获取验证码
+        yzmimg.click()
+        ifc=ifc+1
+        my_AiLPHA() #递归，循环获取验证码，直到识别为4位验证码
+    return 0
+
+def ahjh_DBSec():
+    # 输入账号密码
+    m.move(1710,255)
+    m.click(1710,255)
+    k.tap_key(k.tab_key)
+    k.tap_key(k.tab_key)
+    k.tap_key(k.tab_key)
+    k.type_string(userName)
+    time.sleep(0.1) #间隔100ms
+    k.tap_key(k.tab_key)
+    k.type_string(passWord)
+    time.sleep(0.1) #间隔100ms
+    k.press_key(k.enter_key)
 
 def null_yzm():
     #ActionChains(driver).move_by_offset(200,200).click().perform()
@@ -448,8 +502,9 @@ def null_yzm():
         driver.find_element(By.CSS_SELECTOR,".uedc-ppkg-login_product-submit").click()
     elif "明御WEB应用防火墙" in driver.title:
         driver.find_element(By.ID,"user_login").click()
-    elif "系统登录" in driver.title: #安和金华
-        driver.find_element(By.ID,"btnLogin").click()
+    #elif "系统登录" in driver.title: #安和金华
+        #driver.find_element(By.ID,"btnLogin").click()
+        #driver.find_element(By.CLASS_NAME,"loginBtn").click()
     else:
         k.tap_key(k.enter_key)
 
@@ -482,6 +537,10 @@ def ifTitle():
         kl_wlhs()
     elif "明御数据库审计与风险控制系统" in driver.title:
         my_dbSjFk()
+    elif "AiLPHA安全分析与管理平台" in driver.title:
+        my_AiLPHA()
+    elif "系统登录" in driver.title: #安和金华
+        ahjh_DBSec()
     else:
         print("无当前设备类型")
         null_yzm()
@@ -520,7 +579,7 @@ def main():
         os.system("pause")
         time.sleep(2)
         bianLiTab()
-    os.system("pause")
+    #os.system("pause")
     driver.quit()
 
 
