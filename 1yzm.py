@@ -1,7 +1,11 @@
 """@author RobustBody
-设备巡检，自动登录 beta1.0.1
+设备巡检，自动登录 beta1.0.2
  版本更新：
+新增隐私错误自动点击功能
+
+beta1.0.1 版本更新：
     修复了部分bug,账号密码改为了手动输入
+
  识别验证码步骤：
 1.打开浏览器，打开所有安全设备登录页面
 2.根据每个页面的title不同，设备设备类型
@@ -10,8 +14,9 @@
 5.无验证码的根据title，选择不同的登录点击方式
 使用方式：
 双击py,浏览器启动后，打开巡检的设备，到命令行窗口，输入任意键；
-回到浏览器，开始自动登录；脚本前三次登录为自动登录。
+回到浏览器，开始自动登录。
 """
+
 
 
 # 导入相关库
@@ -46,9 +51,15 @@ driver = webdriver.Edge(options=options)
 # 全局实例化对象
 m=PyMouse()
 k=PyKeyboard()
+
+#脚本测试
+#userName="admin"
+#passWord="pass"
+
 userName=input("请输入要登录的用户名：")
 #passWord=input("请输入用户密码：")
 passWord=getpass.getpass("请输入用户密码：")
+
 ifc=0
 
 #天清入侵防御系统
@@ -508,7 +519,6 @@ def null_yzm():
     else:
         k.tap_key(k.enter_key)
 
-
 # 通过网页title，判断设备类型，调用设备对应的类方法;或通过Copyright的内容判断设备厂商，辅助判断设备类型
 def ifTitle():
     if "新建标签页" in driver.title:
@@ -545,9 +555,16 @@ def ifTitle():
         print("无当前设备类型")
         null_yzm()
 
+def err_Cert():
+    driver.find_element(By.ID,"details-button").click()
+    driver.find_element(By.ID,"proceed-link").click()
+
+def ifTitle2():
+    if "隐私错误" in driver.title:
+        err_Cert()
 
 #循环标签页识别验证码
-def bianLiTab():
+def bianLiTab(key_123):
     all_handles = driver.window_handles #获取到当前所有的句柄,所有的句柄存放在列表当中
     print(all_handles) #打印句柄
     #num=len(driver.window_handles)
@@ -564,7 +581,10 @@ def bianLiTab():
             #time.sleep(1)
             global ifc
             ifc=0
-            ifTitle()
+            if key_123==1:
+                ifTitle()
+            elif key_123==2:
+                ifTitle2()
         except Exception as e:
             print(e)
         #time.sleep(2)
@@ -576,9 +596,19 @@ def main():
     #driver.switch_to.window(driver.window_handles[1]) #切换到第二个标签页，跳过第一个空白tab
     #循环tab，识别验证码
     while True:#循环执行识别，任意键后等待2s
-        os.system("pause")
-        time.sleep(2)
-        bianLiTab()
+        #os.system("pause")
+        key_123=input("请输入序号执行相关功能（回车默认为1）：\n 1.自动登录(enter default);\n 2.隐私错误自动点击;\n 序号：")
+        #print(key_123)
+        if key_123=="2":
+            time.sleep(2)
+            bianLiTab(2)
+        elif key_123=="1" or key_123=="":
+            time.sleep(2)
+            bianLiTab(1)
+        elif key_123=="exit":
+            break
+        else:
+            continue
     #os.system("pause")
     driver.quit()
 
