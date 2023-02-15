@@ -57,7 +57,8 @@ options.add_argument('--no-sandbox')
 options.add_argument('--disable-dev-shm-usage')
 options.add_argument('--disable-headless')
 options.add_experimental_option('excludeSwitches', ['enable-logging'])
-options.add_argument('--user-data-dir=C:\\Users\\xxx\\AppData\\Local\\Microsoft\\Edge\\User Data')  #这行如果导致报错，显示"unknown error: DevToolsActivePort file doesn't exist"  说明edge还有进程在后台运行
+#options.add_argument('user-data-dir=C:\\Users\\lutw\\AppData\\Local\\Microsoft\\Edge\\User Data')
+options.add_argument('--user-data-dir=C:\\Users\\lutw\\AppData\\Local\\Microsoft\\Edge\\User Data')  #这行如果导致报错，显示"unknown error: DevToolsActivePort file doesn't exist"  说明edge还有进程在后台运行
 driver = webdriver.Edge(options=options)
 
 
