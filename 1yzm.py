@@ -1,7 +1,11 @@
 """@author RobustBody
-设备巡检，自动登录 beta1.0.2
+设备巡检，自动登录 beta1.0.3
  版本更新：
-新增隐私错误自动点击功能
+    提前把输入法切换为en，避免中文输入法下输出的为中文
+    添加重新输入密码功能
+
+beta1.0.2 版本更新：
+    新增隐私错误自动点击功能
 
 beta1.0.1 版本更新：
     修复了部分bug,账号密码改为了手动输入
@@ -37,6 +41,15 @@ import ddddocr
 from pymouse import PyMouse
 from pykeyboard import PyKeyboard
 
+import win32api
+import win32gui
+from win32con import WM_INPUTLANGCHANGEREQUEST
+
+
+#切换输入法为en
+hwnd = win32gui.GetForegroundWindow()
+win32api.SendMessage(hwnd,WM_INPUTLANGCHANGEREQUEST,0,0x409)
+
 
 # 启动浏览器
 options = EdgeOptions()
@@ -47,6 +60,8 @@ options.add_experimental_option('excludeSwitches', ['enable-logging'])
 #options.add_argument('user-data-dir=C:\\Users\\lutw\\AppData\\Local\\Microsoft\\Edge\\User Data')
 options.add_argument('--user-data-dir=C:\\Users\\lutw\\AppData\\Local\\Microsoft\\Edge\\User Data')  #这行如果导致报错，显示"unknown error: DevToolsActivePort file doesn't exist"  说明edge还有进程在后台运行
 driver = webdriver.Edge(options=options)
+
+
 
 # 全局实例化对象
 m=PyMouse()
@@ -597,7 +612,7 @@ def main():
     #循环tab，识别验证码
     while True:#循环执行识别，任意键后等待2s
         #os.system("pause")
-        key_123=input("请输入序号执行相关功能（回车默认为1）：\n 1.自动登录(enter default);\n 2.隐私错误自动点击;\n 序号：")
+        key_123=input("请输入序号执行相关功能（回车默认为1）：\n 1.自动登录(enter default);\n 2.隐私错误自动点击;\n 3.重新输入账号密码;\n 序号：")
         #print(key_123)
         if key_123=="2":
             time.sleep(2)
@@ -607,6 +622,10 @@ def main():
             bianLiTab(1)
         elif key_123=="exit":
             break
+        elif key_123=="3":
+            global userName,passWord
+            userName=input("请输入要登录的用户名：")
+            passWord=getpass.getpass("请输入用户密码：")
         else:
             continue
     #os.system("pause")
