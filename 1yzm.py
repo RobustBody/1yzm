@@ -1,15 +1,16 @@
 """@author RobustBody
-设备巡检，自动登录 beta1.0.3
+设备巡检，自动登录 beta1.0.4 end
+
  版本更新：
+    新增自动打勾阅读并同意复选框
+    新增命令行调试模式eval()
+beta1.0.3
     提前把输入法切换为en，避免中文输入法下输出的为中文
     添加重新输入密码功能
-
 beta1.0.2 版本更新：
     新增隐私错误自动点击功能
-
 beta1.0.1 版本更新：
     修复了部分bug,账号密码改为了手动输入
-
  识别验证码步骤：
 1.打开浏览器，打开所有安全设备登录页面
 2.根据每个页面的title不同，设备设备类型
@@ -20,8 +21,6 @@ beta1.0.1 版本更新：
 双击py,浏览器启动后，打开巡检的设备，到命令行窗口，输入任意键；
 回到浏览器，开始自动登录。
 """
-
-
 
 # 导入相关库
 import os
@@ -46,6 +45,11 @@ import win32gui
 from win32con import WM_INPUTLANGCHANGEREQUEST
 
 
+currentPath=os.getcwd()
+
+UserDataPath=currentPath+"\\tools\\Edge\\User Data"
+print(UserDataPath)
+
 #切换输入法为en
 hwnd = win32gui.GetForegroundWindow()
 win32api.SendMessage(hwnd,WM_INPUTLANGCHANGEREQUEST,0,0x409)
@@ -57,7 +61,7 @@ options.add_argument('--no-sandbox')
 options.add_argument('--disable-dev-shm-usage')
 options.add_argument('--disable-headless')
 options.add_experimental_option('excludeSwitches', ['enable-logging'])
-options.add_argument('--user-data-dir=C:\\Users\\xxx\\AppData\\Local\\Microsoft\\Edge\\User Data')  #这行如果导致报错，显示"unknown error: DevToolsActivePort file doesn't exist"  说明edge还有进程在后台运行
+options.add_argument('--user-data-dir='+UserDataPath)  #这行如果导致报错，显示"unknown error: DevToolsActivePort file doesn't exist"  说明edge还有进程在后台运行
 driver = webdriver.Edge(options=options)
 
 
@@ -104,6 +108,7 @@ def qm_ips():
         driver.find_element(By.ID,"res4").click() # ips
         ifc=ifc+1
         qm_ips() #递归，循环获取验证码，直到识别为4位验证码
+    driver.execute_script("clicktab('system.state',1)") #直接切换到状态页面
     return 0
 
 #天清Web应用安全网关
@@ -340,6 +345,11 @@ def wb_TDP():
         allInput[1].clear()
         allInput[0].send_keys(userName)
         allInput[1].send_keys(passWord)
+        clsn=driver.find_element(By.TAG_NAME,"label").get_attribute('class')# get_attribute()获取标签属性值的
+        print(clsn)
+        if clsn!="checkbox-label checked":
+            driver.execute_script("document.getElementsByClassName('checkbox')[0].click();")
+        #driver.execute_script("document.getElementsByTagName('label')[0].className='checkbox-label checked';")
         driver.find_element(By.CSS_SELECTOR,".btn.btn-primary.mini.radius").click()
     elif ifc < 20:# 非4位的验证码，需要通过点击刷新重新获取验证码
         yzm.click()#点击验证码
@@ -524,6 +534,7 @@ def null_yzm():
     elif "AiNTA" in driver.title:
         driver.find_element(By.CSS_SELECTOR,".ivu-btn.ivu-btn-primary.ivu-btn-long").click()
     elif "欢迎登录" in driver.title: #深信服
+        driver.execute_script("document.getElementsByClassName('uedc-ppkg-login_product-submit')[0].disabled=false;")
         driver.find_element(By.CSS_SELECTOR,".uedc-ppkg-login_product-submit").click()
     elif "明御WEB应用防火墙" in driver.title:
         driver.find_element(By.ID,"user_login").click()
@@ -577,6 +588,25 @@ def ifTitle2():
     if "隐私错误" in driver.title:
         err_Cert()
 
+def eval1():
+    while True:
+        eee=input("python3:>>>")
+        print(eee)
+        print(type(eee))
+        if eee=="exit":
+            break
+        elif eee !='' or eee !=None or eee !=Null:
+            try:
+                eval(eee)
+            except Exception as e:
+                print(e)
+                #print(sys.exc_info())
+                #print(traceback.format_exc())
+                #print(traceback.print_exc())
+        else:
+            print("--------")
+            continue
+
 #循环标签页识别验证码
 def bianLiTab(key_123):
     all_handles = driver.window_handles #获取到当前所有的句柄,所有的句柄存放在列表当中
@@ -611,7 +641,7 @@ def main():
     #循环tab，识别验证码
     while True:#循环执行识别，任意键后等待2s
         #os.system("pause")
-        key_123=input("请输入序号执行相关功能（回车默认为1）：\n 1.自动登录(enter default);\n 2.隐私错误自动点击;\n 3.重新输入账号密码;\n 序号：")
+        key_123=input("请输入序号执行相关功能（回车默认为1）：\n 1.自动登录(enter default);\n 2.隐私错误自动点击;\n 3.重新输入账号密码;\n 4.进入调试命令行模式(eval());\n 序号：")
         #print(key_123)
         if key_123=="2":
             time.sleep(2)
@@ -625,6 +655,8 @@ def main():
             global userName,passWord
             userName=input("请输入要登录的用户名：")
             passWord=getpass.getpass("请输入用户密码：")
+        elif key123=="4":
+            eval1()
         else:
             continue
     #os.system("pause")
