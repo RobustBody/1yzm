@@ -22,6 +22,12 @@ beta1.0.1 版本更新：
 回到浏览器，开始自动登录。
 """
 
+"""
+driver.current_url 获取当前标签页的url地址
+
+"""
+
+
 # 导入相关库
 import os
 import time
@@ -44,9 +50,10 @@ import win32api
 import win32gui
 from win32con import WM_INPUTLANGCHANGEREQUEST
 
-
 currentPath=os.getcwd()
 
+msedge_location = currentPath+"\\tools\\Edge\\Application\\msedge.exe"
+print(msedge_location)
 UserDataPath=currentPath+"\\tools\\Edge\\User Data"
 print(UserDataPath)
 
@@ -57,6 +64,7 @@ win32api.SendMessage(hwnd,WM_INPUTLANGCHANGEREQUEST,0,0x409)
 
 # 启动浏览器
 options = EdgeOptions()
+options.binary_location=msedge_location
 options.add_argument('--no-sandbox')
 options.add_argument('--disable-dev-shm-usage')
 options.add_argument('--disable-headless')
@@ -655,7 +663,7 @@ def main():
             global userName,passWord
             userName=input("请输入要登录的用户名：")
             passWord=getpass.getpass("请输入用户密码：")
-        elif key123=="4":
+        elif key_123=="4":
             eval1()
         else:
             continue
